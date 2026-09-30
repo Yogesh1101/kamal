@@ -42,6 +42,13 @@ CREATE TABLE IF NOT EXISTS devices (
     created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 );
 
+CREATE TABLE IF NOT EXISTS ai_recipes (
+    cache_key    TEXT PRIMARY KEY,
+    model        TEXT NOT NULL,
+    recipes_json TEXT NOT NULL,
+    created_at   TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
+
 CREATE TABLE IF NOT EXISTS notifications (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     kind       TEXT NOT NULL,

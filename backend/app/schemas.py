@@ -103,6 +103,41 @@ class NotificationOut(ApiModel):
     created_at: datetime
 
 
+Diet = Literal["vegetarian", "non vegetarian"]
+
+
+class UsedItem(ApiModel):
+    id: int
+    name: str
+    days_left: int
+
+
+class RecipeSuggestion(ApiModel):
+    name: str
+    source: Literal["dataset", "gemini"]
+    score: float
+    good_match: bool
+    coverage: float
+    used_items: list[UsedItem]
+    missing_ingredients: list[str]
+    ingredients: list[str]
+    steps: list[str]  # empty for dataset recipes (the dataset has no steps)
+    diet: Diet
+    course: str | None
+    total_time_minutes: int | None
+
+
+class RecipeMeta(PageMeta):
+    # not_needed: 3+ good dataset matches (or nothing expiring); cached/generated:
+    # Gemini recipes included; unavailable: Gemini was needed but failed.
+    ai_status: Literal["not_needed", "cached", "generated", "unavailable"]
+
+
+class RecipePage(ApiModel):
+    data: list[RecipeSuggestion]
+    meta: RecipeMeta
+
+
 class AlertRunIn(ApiModel):
     today: date | None = None  # pretend it's another day (for demos)
 
