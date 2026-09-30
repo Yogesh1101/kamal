@@ -7,3 +7,4 @@ pyzbar>=0.1.9
 opencv-python>=4.10
 apscheduler>=3.10,<4
 firebase-admin>=6.5
+google-genai>=1.0

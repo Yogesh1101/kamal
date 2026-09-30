@@ -11,7 +11,7 @@ from . import errors, notify
 from .alerts import run_daily_check
 from .config import DIGEST_HOUR, DIGEST_MINUTE, TIMEZONE
 from .db import init_db
-from .routes import alerts, categories, items, scan
+from .routes import alerts, categories, items, recipes, scan
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
@@ -39,6 +39,7 @@ api.include_router(items.router)
 api.include_router(categories.router)
 api.include_router(scan.router)
 api.include_router(alerts.router)
+api.include_router(recipes.router)
 
 
 @api.get("/health", tags=["health"])
