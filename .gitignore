@@ -1,0 +1,12 @@
+.agent-kit/
+.claude/
+project-files/
+work/*
+
+CLAUDE.md
+# Backend
+.venv/
+__pycache__/
+*.db
+.env
+*firebase*.json
