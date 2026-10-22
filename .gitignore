@@ -10,3 +10,6 @@ __pycache__/
 *.db
 .env
 *firebase*.json
+
+# Firmware
+firmware/**/config.h
