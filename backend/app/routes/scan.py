@@ -8,6 +8,7 @@ from fastapi import APIRouter, File, Request, Response, UploadFile
 from fastapi.concurrency import run_in_threadpool
 
 from ..barcode import decode_image
+from ..config import MAX_IMAGE_BYTES
 from ..db import get_conn
 from ..errors import ApiError, invalid
 from ..inventory import add_item
@@ -28,19 +29,40 @@ BARCODE = re.compile(r"\d{8,14}")
 @router.post("/images", response_model=Envelope[ScanOut], status_code=201)
 async def scan_upload(request: Request, response: Response, image: UploadFile = File(...)):
     """Photo sent as a form upload (simulated scanner, /docs page)."""
+    if image.size is not None and image.size > MAX_IMAGE_BYTES:
+        raise _too_large()
     return await _scan_image(await image.read(), request, response)
 
 
 @router.post("/jpeg", response_model=Envelope[ScanOut], status_code=201)
 async def scan_jpeg(request: Request, response: Response):
     """Photo sent as the raw request body (Content-Type: image/jpeg). Easier for the ESP32-CAM."""
-    return await _scan_image(await request.body(), request, response)
+    return await _scan_image(await _read_body_limited(request), request, response)
 
 
 @router.post("/codes", response_model=Envelope[ScanOut], status_code=201)
 def scan_code(data: CodeIn, request: Request, response: Response):
     """Barcode text typed in or read by another device; skips image decoding."""
     return _created(_add_from_code(data.code.strip()), request, response)
+
+
+def _too_large() -> ApiError:
+    return ApiError(413, "PAYLOAD_TOO_LARGE",
+                    f"Image is larger than {MAX_IMAGE_BYTES // (1024 * 1024)} MB")
+
+
+async def _read_body_limited(request: Request) -> bytes:
+    """Read the raw body, stopping as soon as it passes the size limit
+    (also covers requests that don't state a Content-Length)."""
+    declared = request.headers.get("content-length")
+    if declared and declared.isdigit() and int(declared) > MAX_IMAGE_BYTES:
+        raise _too_large()
+    body = bytearray()
+    async for chunk in request.stream():
+        body += chunk
+        if len(body) > MAX_IMAGE_BYTES:
+            raise _too_large()
+    return bytes(body)
 
 
 async def _scan_image(image_bytes: bytes, request: Request, response: Response) -> Envelope[ScanOut]:

@@ -28,5 +28,8 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODELS = [m.strip() for m in os.getenv(
     "GEMINI_MODELS", "gemini-3.8-flash,gemini-3.5-flash,gemini-3.1-flash-lite").split(",") if m.strip()]
 
+# Largest photo accepted by the scan endpoints (phone photos are a few MB).
+MAX_IMAGE_BYTES = int(os.getenv("MAX_IMAGE_BYTES", 10 * 1024 * 1024))
+
 OFF_URL = "https://world.openfoodfacts.org/api/v2/product/{barcode}.json"
 OFF_USER_AGENT = "SmartKitchenInventory/0.1 (academic project)"

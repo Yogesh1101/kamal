@@ -16,6 +16,14 @@ import cv2
 import httpx
 
 
+def _error_message(resp: httpx.Response) -> str:
+    """The API's error text, or the raw response when it isn't the usual JSON (e.g. a plain-text 500)."""
+    try:
+        return resp.json()["error"]["message"]
+    except (ValueError, KeyError, TypeError):
+        return resp.text.strip()[:200] or "no details"
+
+
 def send(server: str, jpeg: bytes) -> None:
     try:
         resp = httpx.post(f"{server}/api/v1/scans/jpeg", content=jpeg,
@@ -29,7 +37,7 @@ def send(server: str, jpeg: bytes) -> None:
         print(f"  Added: {item['name']} [{item['category']}] expires {item['expiryDate']}"
               f" (source: {data['source']}, code: {data['code']})")
     else:
-        print(f"  {resp.status_code}: {resp.json()['error']['message']}")
+        print(f"  {resp.status_code}: {_error_message(resp)}")
 
 
 def scan_files(server: str, paths: list[str]) -> None:
